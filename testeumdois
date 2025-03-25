@@ -1,0 +1,74 @@
+import { useState } from "react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectTrigger, SelectContent, SelectItem } from "@/components/ui/select";
+
+const servicos = [
+  { nome: "Higienização Interna Completa", valores: { Pequeno: 450, Médio: 480, Grande: 520 } },
+  { nome: "Descontaminação de Pintura", valores: { Pequeno: 100, Médio: 120, Grande: 150 } },
+  { nome: "Americana", valores: { Pequeno: 70, Médio: 90, Grande: 110 } },
+];
+
+export default function OrcamentoForm() {
+  const [cliente, setCliente] = useState("");
+  const [veiculo, setVeiculo] = useState("");
+  const [servicoSelecionado, setServicoSelecionado] = useState(servicos[0].nome);
+  const [tamanho, setTamanho] = useState("Médio");
+  const [observacoes, setObservacoes] = useState("");
+
+  const servicoAtual = servicos.find((s) => s.nome === servicoSelecionado);
+  const preco = servicoAtual?.valores[tamanho] || 0;
+
+  const gerarTextoOrcamento = () => {
+    return `ORÇAMENTO - AUTO E CASA CUNHA\n\nCliente: ${cliente}\nVeículo: ${veiculo}\nServiço: ${servicoSelecionado}\nTamanho: ${tamanho}\nPreço: R$ ${preco}\n\nObservações: ${observacoes}`;
+  };
+
+  const gerarLinkWhatsApp = () => {
+    const texto = encodeURIComponent(gerarTextoOrcamento());
+    return `https://wa.me/?text=${texto}`;
+  };
+
+  return (
+    <div className="max-w-xl mx-auto mt-10">
+      <Card>
+        <CardContent className="space-y-4 p-6">
+          <h2 className="text-xl font-bold">Gerador de Orçamento</h2>
+
+          <Input placeholder="Nome do Cliente" value={cliente} onChange={(e) => setCliente(e.target.value)} />
+          <Input placeholder="Marca e Modelo do Veículo" value={veiculo} onChange={(e) => setVeiculo(e.target.value)} />
+
+          <Select value={servicoSelecionado} onValueChange={setServicoSelecionado}>
+            <SelectTrigger>Selecione o Serviço</SelectTrigger>
+            <SelectContent>
+              {servicos.map((s) => (
+                <SelectItem key={s.nome} value={s.nome}>{s.nome}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          <Select value={tamanho} onValueChange={setTamanho}>
+            <SelectTrigger>Selecione o Tamanho</SelectTrigger>
+            <SelectContent>
+              {["Pequeno", "Médio", "Grande"].map((t) => (
+                <SelectItem key={t} value={t}>{t}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          <Textarea placeholder="Observações" value={observacoes} onChange={(e) => setObservacoes(e.target.value)} />
+
+          <div className="text-lg font-semibold">Preço: R$ {preco}</div>
+
+          <div className="flex gap-4">
+            <Button onClick={() => navigator.clipboard.writeText(gerarTextoOrcamento())}>Copiar Orçamento</Button>
+            <Button asChild>
+              <a href={gerarLinkWhatsApp()} target="_blank" rel="noopener noreferrer">Enviar por WhatsApp</a>
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
